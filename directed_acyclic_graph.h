@@ -4,15 +4,29 @@
 #include <memory.h>
 #include "array_header.h"
 
+struct Node;
+
 typedef struct Node {
-    int value;
     int parent;
+    void(*update)(struct Node*);
+    int value;
 } Node;
 
 typedef struct DAG {
     ArrayHeader header;
     Node nodes[1];
 } DAG;
+
+void nodeUpdate(Node* self){
+    printf("updating node\n");
+    self->value++;
+}
+
+Node nodeCreate(){
+    Node self = {0};
+    self.update = nodeUpdate;
+    return self;
+}
 
 // recomended initial capacity 10
 DAG* DAGInit(int initialCapacity){
@@ -32,7 +46,7 @@ DAG* DAGInit(int initialCapacity){
     return dag;
 }
 
-DAG* DAGInsertNode(DAG* self, Node element){
+void DAGInsertNode(DAG* self, Node element){
     if(self->header.length + 1 == self->header.capacity){
         self = realloc(self, self->header.capacity * self->header.elementSize * 2 + sizeof(ArrayHeader));
         if(self == NULL) {
@@ -44,7 +58,6 @@ DAG* DAGInsertNode(DAG* self, Node element){
     }
     if(self->header.length == 0) element.parent = -1;
     self->nodes[self->header.length++] = element;
-    return self;
 }
 
 int DAGAddChild(DAG* self, uint64_t parent, uint64_t child){

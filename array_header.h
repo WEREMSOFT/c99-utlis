@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 typedef struct ArrayHeader {
-    uint64_t capacity;
-    uint64_t length;
-    uint64_t elementSize;
+    int capacity;
+    int length;
+    int elementSize;
 } ArrayHeader;
 
 #endif
