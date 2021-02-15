@@ -46,18 +46,18 @@ DAG* DAGInit(int initialCapacity){
     return dag;
 }
 
-void DAGInsertNode(DAG* self, Node element){
-    if(self->header.length + 1 == self->header.capacity){
-        self = realloc(self, self->header.capacity * self->header.elementSize * 2 + sizeof(ArrayHeader));
-        if(self == NULL) {
-            printf("Error reallocating DAG\n");
+void DAGInsertNode(DAG** self, Node element){
+    if((*self)->header.length + 1 == (*self)->header.capacity){
+        *self = realloc(*self, (*self)->header.capacity * (*self)->header.elementSize * 2 + sizeof(ArrayHeader));
+        if(*self == NULL) {
+            printf("Error reallocating GameObjectDAG\n");
             exit(-1);
         } else {
-            self->header.capacity *= 2;
+            (*self)->header.capacity *= 2;
         }
     }
-    if(self->header.length == 0) element.parent = -1;
-    self->nodes[self->header.length++] = element;
+    if((*self)->header.length == 0) element.parent = -1;
+    (*self)->nodes[(*self)->header.length++] = element;
 }
 
 int DAGAddChild(DAG* self, uint64_t parent, uint64_t child){

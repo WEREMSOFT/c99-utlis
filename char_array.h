@@ -28,18 +28,17 @@ CharArray* charArrayInit(int initialCapacity){
     return array;
 }
 
-CharArray* charArrayInsertElement(CharArray* array, char element){
-    if(array->header.length + 1 == array->header.capacity){
-        array = realloc(array, array->header.capacity * array->header.elementSize * 2 + sizeof(ArrayHeader));
-        if(array == NULL) {
+void charArrayInsertElement(CharArray** self, char element){
+    if((*self)->header.length + 1 == (*self)->header.capacity){
+        *self = realloc(*self, (*self)->header.capacity * (*self)->header.elementSize * 2 + sizeof(ArrayHeader));
+        if(*self == NULL) {
             printf("Error reallocating array\n");
             exit(-1);
         } else {
-            array->header.capacity *= 2;
+            (*self)->header.capacity *= 2;
         }
     }
-    array->data[array->header.length++] = element;
-    return array;
+    (*self)->data[(*self)->header.length++] = element;
 }
 
 void charArratFini(CharArray* array) {
