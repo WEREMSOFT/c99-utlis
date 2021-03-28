@@ -5,15 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct UniversalArray {
+typedef struct Array {
     ArrayHeader header;
     char data[1];
-} UniversalArray;
+} Array;
 
 // recomended initial capacity 10
-UniversalArray* universalArrayCreate(int initialCapacity, size_t elementSize){
+Array* arrayCreate(int initialCapacity, size_t elementSize){
     size_t size = elementSize * initialCapacity + sizeof(ArrayHeader);
-    UniversalArray* array = (UniversalArray*)malloc(size);
+    Array* array = (Array*)malloc(size);
 
     if(!array){
         printf("Error allocation memory for UniversalArray %s::%d\n", __FILE__, __LINE__);
@@ -28,7 +28,7 @@ UniversalArray* universalArrayCreate(int initialCapacity, size_t elementSize){
     return array;
 }
 
-void universalArrayInsertElement(UniversalArray** this, void *element){
+void arrayInsertElement(Array** this, void *element){
     if((*this)->header.length + 1 == (*this)->header.capacity){
         *this = realloc(*this, (*this)->header.capacity * (*this)->header.elementSize * 2 + sizeof(ArrayHeader));
         if(*this == NULL) {
@@ -42,7 +42,7 @@ void universalArrayInsertElement(UniversalArray** this, void *element){
     memcpy(&(**this).data[(*this)->header.elementSize * (*this)->header.length++], element, (**this).header.elementSize);
 }
 
-void universalArratFini(UniversalArray* array) {
+void universalArratFini(Array* array) {
     free(array);
 }
 
