@@ -22,6 +22,8 @@ Array* arrayCreate(int initialCapacity, size_t elementSize){
 
     memset(array, 0, size);
 
+    array->header.allocatedBytes = size;
+
     array->header.capacity = initialCapacity;
     array->header.elementSize = elementSize;
     array->header.length = 0;
@@ -29,17 +31,32 @@ Array* arrayCreate(int initialCapacity, size_t elementSize){
 }
 
 void arrayInsertElement(Array** this, void *element){
+    (*this)->header.allocatedBytes = 0xffffffff;
     if((*this)->header.length + 1 == (*this)->header.capacity){
-        *this = realloc(*this, (*this)->header.capacity * (*this)->header.elementSize * 2 + sizeof(ArrayHeader));
+        int size = (*this)->header.capacity * (*this)->header.elementSize * 2 + sizeof(ArrayHeader);
+        Array* newPointer = realloc(*this, size);
         if(*this == NULL) {
             printf("Error reallocating array\n");
             exit(-1);
         } else {
+            *this = newPointer;
+            (*this)->header.allocatedBytes = size;
             (*this)->header.capacity *= 2;
         }
     }
 
-    memcpy(&(**this).data[(*this)->header.elementSize * (*this)->header.length++], element, (**this).header.elementSize);
+    memcpy(&(**this).data[(*this)->header.elementSize * (*this)->header.length], element, (**this).header.elementSize);
+    (*this)->header.length++;
+}
+
+void arrayConcatenate(Array** this, Array* source) {
+    if((*this)->header.elementSize != source->header.elementSize) {
+        printf("Error: Arrays holds elements of different dizes. %s::%d\n", __FILE__, __LINE__);
+        exit(-1);
+    }
+    for(int i = 0; i < source->header.length; i++) {
+        arrayInsertElement(this, &source->data[i]);
+    }
 }
 
 void universalArratFini(Array* array) {
