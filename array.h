@@ -30,6 +30,13 @@ Array* arrayCreate(int initialCapacity, size_t elementSize){
     return array;
 }
 
+Array* arrayCreateFromCArray(void *c_array, size_t elementSize, int length){
+    Array* array = arrayCreate(length, elementSize);
+    array->header.length = length;
+    memcpy(array->data, c_array, length * elementSize);
+    return array;
+}
+
 void arrayInsertElement(Array** this, void *element){
     (*this)->header.allocatedBytes = 0xffffffff;
     if((*this)->header.length + 1 == (*this)->header.capacity){
@@ -59,8 +66,11 @@ void arrayConcatenate(Array** this, Array* source) {
     }
 }
 
-void universalArratFini(Array* array) {
-    free(array);
+void* arrayGetElementAt(Array* this, int index) {
+    if(index < this->header.length) {
+        return &this->data[index * this->header.elementSize];
+    }
+    return NULL;
 }
 
 #endif
