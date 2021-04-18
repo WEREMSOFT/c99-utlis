@@ -7,7 +7,6 @@ typedef struct ArrayHeader {
     int capacity;
     int length;
     int elementSize;
-    int allocatedBytes;
 } ArrayHeader;
 
 #endif

@@ -22,8 +22,6 @@ Array* arrayCreate(int initialCapacity, size_t elementSize){
 
     memset(array, 0, size);
 
-    array->header.allocatedBytes = size;
-
     array->header.capacity = initialCapacity;
     array->header.elementSize = elementSize;
     array->header.length = 0;
@@ -38,7 +36,6 @@ Array* arrayCreateFromCArray(void *c_array, size_t elementSize, int length){
 }
 
 void arrayInsertElement(Array** this, void *element){
-    (*this)->header.allocatedBytes = 0xffffffff;
     if((*this)->header.length + 1 == (*this)->header.capacity){
         int size = (*this)->header.capacity * (*this)->header.elementSize * 2 + sizeof(ArrayHeader);
         Array* newPointer = realloc(*this, size);
@@ -47,7 +44,6 @@ void arrayInsertElement(Array** this, void *element){
             exit(-1);
         } else {
             *this = newPointer;
-            (*this)->header.allocatedBytes = size;
             (*this)->header.capacity *= 2;
         }
     }
