@@ -21,38 +21,59 @@
  * 
  */
 
-#include "array.h"
+typedef struct {
+    int capacity;
+    int length;
+    void *lastReturnedPointer;
+} StackAllocatorHeader;
 
-typedef Array StackAllocator;
+typedef struct {
+    StackAllocatorHeader header;
+    char data[1];
+} StackAllocator;
 
 StackAllocator* stackAllocatorCreate(size_t size) {
-    size_t sizeToAllocate = size + sizeof(ArrayHeader);
-    StackAllocator* this = (StackAllocator*)malloc(sizeToAllocate);
+    size_t sizeToAllocate = size + sizeof(StackAllocatorHeader);
+    StackAllocator* this = (StackAllocator*)calloc(sizeof(char), sizeToAllocate);
 
     if(!this){
         printf("Error creating stack allocator %s::%d\n", __FILE__, __LINE__);
         exit(-1);
     }
 
-    memset(this, 0, size);
-
     this->header.capacity = size;
-    this->header.elementSize = sizeof(char);
     this->header.length = 0;
+    this->header.lastReturnedPointer = &this->data[0];
     return this;
 }
 
-void* stackAllocatorAlloc(StackAllocator **this, size_t size) {
-    void *returnValue = &(*this)->data[(*this)->header.length];
-    if((*this)->header.length + size == (*this)->header.capacity){
+void* stackAllocatorAlloc(StackAllocator *this, size_t size) {
+    if(this->header.length + size > this->header.capacity){
         // TODO: realloc will invalidate all the pointers provided before.
         // For now, we just abort the program, in the future we should create
         // A handle table
-        printf("Allocator ran out of space.\nActual capacity %d\nRequired capacity %d\n", (*this)->header.capacity, (*this)->header.capacity + size);
+        printf("Allocator ran out of space.\nActual capacity %d\nRequired capacity %d\n", this->header.capacity, this->header.capacity + size);
         exit(-1);
     }
+    void *returnValue = &this->data[this->header.length];
+    this->header.length += size;
+    return returnValue;
+}
+
+void stackAllocatorFree(StackAllocator *this, void* pointer){
+    if(this->header.lastReturnedPointer == pointer) {
+         long int size = (void *)&this->data[0] - this->header.lastReturnedPointer;
+        this->header.length -= size;
+        this->header.lastReturnedPointer -= size;
+    }
+}
+
+void* stackAllocatorRealloc(void* pointer, size_t size) {
+    void *returnValue = stackAllocatorAlloc(allocator, size);
     
-    (*this)->header.length += size;
+    if(pointer != NULL)
+        memcpy(returnValue, pointer, size);
+
     return returnValue;
 }
 
