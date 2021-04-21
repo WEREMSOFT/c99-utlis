@@ -21,10 +21,13 @@
  * 
  */
 
+#include <string.h>
+#include <stdio.h>
+
 typedef struct {
     int capacity;
     int length;
-    void *lastReturnedPointer;
+    int allocationCount;
 } StackAllocatorHeader;
 
 typedef struct {
@@ -38,12 +41,10 @@ StackAllocator* stackAllocatorCreate(size_t size) {
 
     if(!this){
         printf("Error creating stack allocator %s::%d\n", __FILE__, __LINE__);
-        exit(-1);
+        return NULL;
     }
 
     this->header.capacity = size;
-    this->header.length = 0;
-    this->header.lastReturnedPointer = &this->data[0];
     return this;
 }
 
@@ -53,23 +54,23 @@ void* stackAllocatorAlloc(StackAllocator *this, size_t size) {
         // For now, we just abort the program, in the future we should create
         // A handle table
         printf("Allocator ran out of space.\nActual capacity %d\nRequired capacity %d\n", this->header.capacity, this->header.capacity + size);
-        exit(-1);
+        return NULL;
     }
     void *returnValue = &this->data[this->header.length];
     this->header.length += size;
+    this->header.allocationCount++;
     return returnValue;
 }
 
-void stackAllocatorFree(StackAllocator *this, void* pointer){
-    if(this->header.lastReturnedPointer == pointer) {
-         long int size = (void *)&this->data[0] - this->header.lastReturnedPointer;
-        this->header.length -= size;
-        this->header.lastReturnedPointer -= size;
+void stackAllocatorFree(StackAllocator *this){
+    this->header.allocationCount--;
+    if(this->header.allocationCount == 0){
+        this->header.length = 0;
     }
 }
 
-void* stackAllocatorRealloc(void* pointer, size_t size) {
-    void *returnValue = stackAllocatorAlloc(allocator, size);
+void* stackAllocatorRealloc(StackAllocator *this, void* pointer, size_t size) {
+    void *returnValue = stackAllocatorAlloc(this, size);
     
     if(pointer != NULL)
         memcpy(returnValue, pointer, size);
