@@ -4,18 +4,31 @@
 #include "array_header.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
-typedef struct Array {
+typedef struct Array
+{
     ArrayHeader header;
     char data[1];
 } Array;
 
-// recomended initial capacity 10
-Array* arrayCreate(int initialCapacity, size_t elementSize){
-    size_t size = elementSize * initialCapacity + sizeof(ArrayHeader);
-    Array* array = (Array*)malloc(size);
+Array *arrayCreate(int initialCapacity, size_t elementSize);
+Array *arrayCreateFromCArray(void *c_array, size_t elementSize, int length);
+void arrayInsertElement(Array **this, void *element);
+void arrayConcatenate(Array **this, Array *source);
+void *arrayGetElementAt(Array *this, int index);
+#endif
 
-    if(!array){
+#ifdef __UNIVERSAL_ARRAY_IMPLEMENTATION__
+#undef __UNIVERSAL_ARRAY_IMPLEMENTATION__
+// recomended initial capacity 10
+Array *arrayCreate(int initialCapacity, size_t elementSize)
+{
+    size_t size = elementSize * initialCapacity + sizeof(ArrayHeader);
+    Array *array = (Array *)malloc(size);
+
+    if (!array)
+    {
         printf("Error allocation memory for UniversalArray %s::%d\n", __FILE__, __LINE__);
         exit(-1);
     }
@@ -28,21 +41,27 @@ Array* arrayCreate(int initialCapacity, size_t elementSize){
     return array;
 }
 
-Array* arrayCreateFromCArray(void *c_array, size_t elementSize, int length){
-    Array* array = arrayCreate(length, elementSize);
+Array *arrayCreateFromCArray(void *c_array, size_t elementSize, int length)
+{
+    Array *array = arrayCreate(length, elementSize);
     array->header.length = length;
     memcpy(array->data, c_array, length * elementSize);
     return array;
 }
 
-void arrayInsertElement(Array** this, void *element){
-    if((*this)->header.length + 1 == (*this)->header.capacity){
+void arrayInsertElement(Array **this, void *element)
+{
+    if ((*this)->header.length + 1 == (*this)->header.capacity)
+    {
         int size = (*this)->header.capacity * (*this)->header.elementSize * 2 + sizeof(ArrayHeader);
-        Array* newPointer = realloc(*this, size);
-        if(*this == NULL) {
+        Array *newPointer = realloc(*this, size);
+        if (*this == NULL)
+        {
             printf("Error reallocating array\n");
             exit(-1);
-        } else {
+        }
+        else
+        {
             *this = newPointer;
             (*this)->header.capacity *= 2;
         }
@@ -52,21 +71,25 @@ void arrayInsertElement(Array** this, void *element){
     (*this)->header.length++;
 }
 
-void arrayConcatenate(Array** this, Array* source) {
-    if((*this)->header.elementSize != source->header.elementSize) {
+void arrayConcatenate(Array **this, Array *source)
+{
+    if ((*this)->header.elementSize != source->header.elementSize)
+    {
         printf("Error: Arrays holds elements of different dizes. %s::%d\n", __FILE__, __LINE__);
         exit(-1);
     }
-    for(int i = 0; i < source->header.length; i++) {
+    for (int i = 0; i < source->header.length; i++)
+    {
         arrayInsertElement(this, &source->data[i]);
     }
 }
 
-void* arrayGetElementAt(Array* this, int index) {
-    if(index < this->header.length) {
+void *arrayGetElementAt(Array *this, int index)
+{
+    if (index < this->header.length)
+    {
         return &this->data[index * this->header.elementSize];
     }
     return NULL;
 }
-
 #endif
